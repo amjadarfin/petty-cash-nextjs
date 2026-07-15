@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-//import { updateApproverConfigAction } from "@/lib/actions";
+import { updateApproverConfigAction } from "@/lib/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +45,6 @@ function ApproverCard({
   return (
     <div className="card">
       <h3 style={{ marginTop: 0, color: "var(--heading)" }}>{label}</h3>
-      {/*
       <form action={updateApproverConfigAction}>
         <input type="hidden" name="roleName" value={roleName} />
         <div className="mb-3">
@@ -82,7 +81,6 @@ function ApproverCard({
         </div>
         <button className="btn btn-gold btn-small" type="submit">Save</button>
       </form>
-      */}
     </div>
   );
 }
