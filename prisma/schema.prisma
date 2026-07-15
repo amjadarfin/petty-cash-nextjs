@@ -1,0 +1,246 @@
+// Petty Cash Management System — Prisma schema
+// Mirrors the data dictionary in the requirements document (Section 7),
+// adapted for a relational Postgres database instead of SharePoint lists.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STAFF
+  DEPUTY_DIRECTOR
+  DIRECTOR
+  ACCOUNTS
+  SYSTEM_OWNER
+}
+
+enum RequestStatus {
+  DRAFT
+  SUBMITTED
+  RETURNED_BY_DD
+  REJECTED_BY_DD
+  APPROVED_BY_DD
+  RETURNED_BY_DIRECTOR
+  REJECTED_BY_DIRECTOR
+  FINALLY_APPROVED
+  PAID
+  SETTLED
+  CANCELLED
+}
+
+enum EvidenceStatus {
+  COMPLETE
+  EXCEPTION_REQUESTED
+  INCOMPLETE
+}
+
+enum PaymentStatus {
+  NOT_PAID
+  PART_PAID
+  PAID
+  SETTLED
+}
+
+enum FiscalYearStatus {
+  OPEN
+  CLOSED
+}
+
+enum CarryforwardStatus {
+  NONE
+  PROPOSED
+  APPROVED
+  APPLIED
+  LAPSED
+}
+
+enum ApprovalStage {
+  DEPUTY_DIRECTOR
+  DIRECTOR
+  AMENDMENT
+}
+
+enum AuditEventType {
+  REQUEST_LIFECYCLE
+  FINANCIAL_CHANGES
+  EVIDENCE
+  APPROVAL
+  ACCESS_ADMIN
+  TECHNICAL
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  department   String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  requests        Request[]        @relation("Requester")
+  approvalActions ApprovalAction[] @relation("Actor")
+  payments        Payment[]        @relation("RecordedBy")
+  auditEntries    AuditLog[]       @relation("Actor")
+}
+
+model ApproverConfig {
+  id                  String    @id @default(cuid())
+  roleName             Role      // DEPUTY_DIRECTOR or DIRECTOR
+  primaryApproverId    String
+  backupApproverId     String?
+  delegationActive     Boolean   @default(false)
+  delegationStart      DateTime?
+  delegationEnd        DateTime?
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([roleName])
+}
+
+model FiscalYear {
+  id                     String              @id @default(cuid())
+  name                   String
+  code                   String              @unique // e.g. "2026"
+  startDate              DateTime
+  endDate                DateTime
+  opening                Decimal             @db.Decimal(14, 2)
+  supplementary          Decimal             @default(0) @db.Decimal(14, 2)
+  carryforwardAmount     Decimal             @default(0) @db.Decimal(14, 2)
+  carryforwardStatus     CarryforwardStatus  @default(NONE)
+  status                 FiscalYearStatus    @default(OPEN)
+  closedAt               DateTime?
+  closedBy               String?
+
+  requests        Request[]
+  voucherSequence VoucherSequence?
+}
+
+model VoucherSequence {
+  fiscalYearId   String     @id
+  fiscalYear     FiscalYear @relation(fields: [fiscalYearId], references: [id])
+  lastIssued     Int        @default(0)
+  updatedAt      DateTime   @updatedAt
+}
+
+model BudgetHead {
+  id               String   @id @default(cuid())
+  code             String   @unique
+  name             String
+  annualLimit      Decimal  @db.Decimal(14, 2)
+  thresholdPercent Int      @default(80)
+  active           Boolean  @default(true)
+  sortOrder        Int      @default(0)
+
+  requests Request[]
+}
+
+model Request {
+  id                   String          @id @default(cuid())
+  voucherNo            String?         @unique
+  fiscalYearId         String
+  fiscalYear           FiscalYear      @relation(fields: [fiscalYearId], references: [id])
+  cycleNo              Int             @default(1)
+
+  requesterId          String
+  requester            User            @relation("Requester", fields: [requesterId], references: [id])
+  department           String?
+
+  requestDate          DateTime?
+  expenseDate          DateTime
+  vendorPayee          String
+  purpose              String
+  budgetHeadId         String
+  budgetHead           BudgetHead      @relation(fields: [budgetHeadId], references: [id])
+  requestedAmount      Decimal         @db.Decimal(14, 2)
+  actualAmount         Decimal?        @db.Decimal(14, 2)
+
+  evidencePath         String?
+  evidenceFileName     String?
+  evidenceStatus       EvidenceStatus  @default(COMPLETE)
+  exceptionReason      String?
+
+  status               RequestStatus   @default(DRAFT)
+  currentApproverId    String?
+
+  ddDecision           String?
+  ddComments           String?
+  ddDecisionDate       DateTime?
+
+  directorDecision     String?
+  directorComments     String?
+  directorDecisionDate DateTime?
+
+  paymentStatus        PaymentStatus   @default(NOT_PAID)
+  recordLocked         Boolean         @default(false)
+  budgetThresholdFlag  Boolean         @default(false)
+  duplicateKey         String?
+
+  createdAt            DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  approvalActions      ApprovalAction[]
+  payments             Payment[]
+  auditEntries         AuditLog[]
+
+  @@index([status])
+  @@index([fiscalYearId])
+  @@index([budgetHeadId])
+  @@index([requesterId])
+}
+
+model ApprovalAction {
+  id         String        @id @default(cuid())
+  requestId  String
+  request    Request       @relation(fields: [requestId], references: [id])
+  voucherNo  String?
+  cycleNo    Int
+  stage      ApprovalStage
+  decision   String
+  actorId    String
+  actor      User          @relation("Actor", fields: [actorId], references: [id])
+  actionDate DateTime      @default(now())
+  comments   String
+
+  @@index([requestId])
+}
+
+model Payment {
+  id               String   @id @default(cuid())
+  requestId        String
+  request          Request  @relation(fields: [requestId], references: [id])
+  voucherNo        String?
+  paidAmount       Decimal  @db.Decimal(14, 2)
+  paymentDate      DateTime
+  method           String
+  reference        String?
+  recordedById     String
+  recordedBy       User     @relation("RecordedBy", fields: [recordedById], references: [id])
+  settlementStatus String   @default("Recorded")
+  createdAt        DateTime @default(now())
+
+  @@index([requestId])
+}
+
+model AuditLog {
+  id          String          @id @default(cuid())
+  requestId   String?
+  request     Request?        @relation(fields: [requestId], references: [id])
+  voucherNo   String?
+  eventType   AuditEventType
+  fieldName   String?
+  oldValue    String?
+  newValue    String?
+  actorId     String?
+  actor       User?           @relation("Actor", fields: [actorId], references: [id])
+  timestamp   DateTime        @default(now())
+  details     String?
+
+  @@index([requestId])
+  @@index([timestamp])
+}

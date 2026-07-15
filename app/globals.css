@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0B111C;
+  --foreground: #E7ECF5;
+  --heading: #F2E9D2;
+  --navy: #17233B;
+  --navy-2: #223257;
+  --slate: #ADBAD1;
+  --gold: #E0B361;
+  --gold-soft: #3C2F16;
+  --green: #5FC08D;
+  --green-soft: #163326;
+  --red: #EB8880;
+  --red-soft: #3A1D1B;
+  --line: #354265;
+  --paper-2: #121A2B;
+  --paper-3: #1C2740;
+  --input-bg: #0F1728;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  font-size: 15.5px;
+  line-height: 1.55;
+}
+
+h1, h2, h3 { font-family: Georgia, "Iowan Old Style", serif; color: var(--heading); font-weight: 700; }
+h2 { font-size: 27px !important; }
+h3 { font-size: 19px !important; }
+p { font-size: 14.5px !important; }
+
+.voucher { font-family: "Courier New", ui-monospace, monospace; font-weight: 700; color: var(--heading); font-size: 1em; }
+
+.status-pill {
+  display: inline-block; padding: 4px 11px; border-radius: 11px; font-size: 12px;
+  font-weight: 700; letter-spacing: .3px; text-transform: uppercase; white-space: nowrap;
+}
+.st-DRAFT { background: #3D4457; color: #E1E6F0; }
+.st-SUBMITTED { background: #223A5E; color: #A8CBF5; }
+.st-APPROVED_BY_DD { background: var(--gold-soft); color: var(--gold); }
+.st-FINALLY_APPROVED { background: var(--green-soft); color: var(--green); }
+.st-PAID { background: #16362A; color: #79DDA9; }
+.st-SETTLED { background: #123024; color: #5FC08D; }
+.st-RETURNED_BY_DD, .st-RETURNED_BY_DIRECTOR { background: #47350F; color: #F0C371; }
+.st-REJECTED_BY_DD, .st-REJECTED_BY_DIRECTOR { background: var(--red-soft); color: var(--red); }
+.st-CANCELLED { background: #383838; color: #C7C7C7; }
+
+.card { background: var(--paper-2); border: 1px solid var(--line); border-radius: 3px; padding: 18px; color: var(--foreground); }
+.btn { border: 1px solid var(--navy-2); background: var(--navy-2); color: #fff; padding: 9px 18px; border-radius: 2px; font-size: 14px !important; font-weight: 600; cursor: pointer; display: inline-block; }
+.btn:hover { background: #2C4066; }
+.btn-gold { background: var(--gold); border-color: var(--gold); color: #1B1405; }
+.btn-gold:hover { background: #C99B3F; }
+.btn-outline { background: transparent; color: var(--heading); border-color: var(--line); }
+.btn-outline:hover { background: var(--paper-3); }
+.btn-green { background: var(--green); border-color: var(--green); color: #08281A; }
+.btn-red { background: var(--red); border-color: var(--red); color: #310E0B; }
+.btn-small { padding: 5px 11px; font-size: 12.5px !important; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px !important; }
+th { text-align: left; background: var(--paper-3); color: var(--heading); padding: 10px 11px; font-size: 12.5px !important; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--line); font-weight: 700; }
+td { padding: 10px 11px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--foreground); font-size: 14px !important; }
+tr:hover td { background: var(--paper-3); }
+
+input, select, textarea {
+  width: 100%; padding: 10px 11px; border: 1px solid var(--line); border-radius: 2px;
+  background: var(--input-bg); font-size: 15px !important; color: var(--foreground);
+}
+input::placeholder, textarea::placeholder { color: #8AA0C0; }
+label { display: block; font-size: 12.5px !important; text-transform: uppercase; letter-spacing: .6px; color: var(--slate); margin-bottom: 5px; font-weight: 700; }
+
+.banner { padding: 11px 15px; border-radius: 2px; font-size: 13.5px !important; margin-bottom: 16px; border: 1px solid; line-height: 1.5; }
+.banner-warn { background: var(--gold-soft); border-color: var(--gold); color: var(--gold); }
+.banner-info { background: #1A2C4E; border-color: #4D75B8; color: #A8CBF5; }
+.banner-err { background: var(--red-soft); border-color: var(--red); color: var(--red); }
+
+.empty { padding: 34px 10px; text-align: center; color: var(--slate); border: 1px dashed var(--line); border-radius: 3px; background: var(--paper-2); font-size: 14px !important; }
