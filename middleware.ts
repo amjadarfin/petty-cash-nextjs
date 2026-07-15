@@ -1,5 +1,9 @@
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
 import { NextResponse } from "next/server";
+
+// Initialize a lightweight, edge-compatible NextAuth instance
+const { auth } = NextAuth(authConfig);
 
 const ROLE_PREFIXES: Record<string, string[]> = {
   "/approvals/dd": ["DEPUTY_DIRECTOR", "SYSTEM_OWNER"],
@@ -34,3 +38,4 @@ export default auth((req) => {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
+
