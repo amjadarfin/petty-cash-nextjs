@@ -354,3 +354,25 @@ export async function addBudgetHeadAction(formData: FormData) {
   await writeAudit({ eventType: "ACCESS_ADMIN", actorId: user.id, details: `Budget head created: ${name}` });
   revalidatePath("/admin");
 }
+// 5. Update Approver Config
+export async function updateApproverConfigAction(formData: FormData) {
+  const admin = await requireUser();
+  if (admin.role !== "SYSTEM_OWNER") throw new Error("Not authorized.");
+
+  const id = String(formData.get("id") || "");
+  const userId = String(formData.get("userId") || "");
+
+  await prisma.approverConfig.update({
+    where: { id },
+    data: { userId: userId || null },
+  });
+
+  await writeAudit({ 
+    eventType: "SYSTEM_CONFIG", 
+    actorId: admin.id, 
+    details: `Updated Approver Config ID: ${id} to User ID: ${userId}` 
+  });
+  
+  revalidatePath("/admin/approvers");
+}
+
