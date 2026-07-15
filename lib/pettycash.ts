@@ -75,14 +75,12 @@ export async function approvedExpenditure(fiscalYearId: string): Promise<number>
   const agg = await prisma.request.aggregate({
     where: { 
       fiscalYearId, 
-      status: { in: APPROVED_STATUSES as any[] } 
+      status: { in: APPROVED_STATUSES as unknown as any[] } 
     },
     _sum: { requestedAmount: true },
   });
   return Number(agg._sum.requestedAmount ?? 0);
 }
-
-
 export async function pendingCommitment(fiscalYearId: string): Promise<number> {
   const agg = await prisma.request.aggregate({
     where: { fiscalYearId, status: { in: PENDING_STATUSES as unknown as string[] } },
