@@ -2,7 +2,6 @@ import NextAuth from "next-auth";
 import { authConfig } from "./auth.config"; // Change this line
 import { NextResponse } from "next/server";
 
-
 // Initialize a lightweight, edge-compatible NextAuth instance
 const { auth } = NextAuth(authConfig);
 
