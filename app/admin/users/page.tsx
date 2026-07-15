@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { createUserAction, toggleUserActiveAction, resetUserPasswordAction } from "@/lib/actions";
-
+//import { createUserAction, toggleUserActiveAction, resetUserPasswordAction } from "@/lib/actions";
+import { createUserAction, resetUserPasswordAction } from "@/lib/actions";
 export const dynamic = "force-dynamic";
 
 const ROLE_OPTIONS = ["STAFF", "DEPUTY_DIRECTOR", "DIRECTOR", "ACCOUNTS", "SYSTEM_OWNER"];
@@ -25,6 +25,7 @@ export default async function UsersAdminPage() {
               <td>{u.role.replace(/_/g, " ")}</td>
               <td>{u.department || "—"}</td>
               <td>
+                {/*
                 <form action={toggleUserActiveAction} className="flex items-center gap-2">
                   <input type="hidden" name="id" value={u.id} />
                   <label style={{ textTransform: "none", fontWeight: 400, display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -33,6 +34,7 @@ export default async function UsersAdminPage() {
                   </label>
                   <button className="btn btn-outline btn-small" type="submit">Save</button>
                 </form>
+                */}
               </td>
               <td>
                 <details>
