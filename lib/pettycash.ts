@@ -83,12 +83,14 @@ export async function approvedExpenditure(fiscalYearId: string): Promise<number>
 }
 export async function pendingCommitment(fiscalYearId: string): Promise<number> {
   const agg = await prisma.request.aggregate({
-    where: { fiscalYearId, status: { in: PENDING_STATUSES as unknown as string[] } },
+    where: { 
+      fiscalYearId, 
+      status: { in: PENDING_STATUSES as unknown as any[] } 
+    },
     _sum: { requestedAmount: true },
   });
   return Number(agg._sum.requestedAmount ?? 0);
 }
-
 export async function availableBalance(fiscalYearId: string): Promise<number> {
   const [total, approved] = await Promise.all([
     totalAllocation(fiscalYearId),
@@ -99,7 +101,11 @@ export async function availableBalance(fiscalYearId: string): Promise<number> {
 
 export async function budgetHeadSpent(budgetHeadId: string, fiscalYearId: string): Promise<number> {
   const agg = await prisma.request.aggregate({
-    where: { budgetHeadId, fiscalYearId, status: { in: APPROVED_STATUSES as unknown as string[] } },
+    where: { 
+      budgetHeadId, 
+      fiscalYearId, 
+      status: { in: APPROVED_STATUSES as unknown as any[] } 
+    },
     _sum: { requestedAmount: true },
   });
   return Number(agg._sum.requestedAmount ?? 0);
@@ -145,3 +151,4 @@ export async function resolveApprover(roleName: "DEPUTY_DIRECTOR" | "DIRECTOR"):
 }
 
 export { Prisma };
+
