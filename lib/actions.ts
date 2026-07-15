@@ -468,4 +468,43 @@ export async function updateApproverConfigAction(formData: FormData) {
   revalidatePath("/admin/approvers");
 }
 
+// ---------- User Self-Service ----------
+export async function changeOwnPasswordAction(formData: FormData) {
+  const user = await requireUser();
+  const currentPassword = String(formData.get("currentPassword") || "");
+  const newPassword = String(formData.get("newPassword") || "");
+
+  if (!currentPassword || !newPassword) {
+    throw new Error("Both current and new passwords are required.");
+  }
+  if (newPassword.length < 8) {
+    throw new Error("New password must be at least 8 characters long.");
+  }
+
+  // Fetch current user record securely from database
+  const dbUser = await prisma.user.findUniqueOrThrow({
+    where: { id: user.id }
+  });
+
+  // Verify old password hash
+  const isValid = await bcrypt.compare(currentPassword, dbUser.passwordHash);
+  if (!isValid) {
+    throw new Error("The current password you entered is incorrect.");
+  }
+
+  // Hash and save new password
+  const newPasswordHash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: newPasswordHash },
+  });
+
+  await writeAudit({ 
+    eventType: "ACCESS_ADMIN", 
+    actorId: user.id, 
+    details: "User updated their own account password" 
+  });
+  
+  revalidatePath("/accounts");
+}
 
