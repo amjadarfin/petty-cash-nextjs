@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET, // Hardcoded variable lookup explicitly handles Vercel runtime parameters
   pages: {
     signIn: "/login",
   },
@@ -42,19 +42,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = String(credentials.email).toLowerCase().trim();
         const password = String(credentials.password);
 
-        // 1. Fetch user matching credentials directly from Neon Postgres
+        // Fetch user record directly from Neon Postgres
         const user = await prisma.user.findUnique({
           where: { email }
         });
 
-        // 2. Reject if no user exists or account is deactivated
         if (!user || !user.active) return null;
 
-        // 3. Evaluate typed string against saved encrypted database hash
+        // Evaluate credentials against database hash values
         const isValid = await bcrypt.compare(password, user.passwordHash);
         if (!isValid) return null;
 
-        // 4. Return valid parameters for session construction
         return {
           id: user.id,
           name: user.name,
