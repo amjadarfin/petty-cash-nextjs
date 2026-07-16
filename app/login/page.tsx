@@ -11,17 +11,18 @@ export default async function LoginPage({
   async function login(formData: FormData) {
     "use server";
     try {
-      await signIn("credentials", {
-        email: formData.get("email"),
-        password: formData.get("password"),
-        redirectTo: (formData.get("callbackUrl") as string) || "/dashboard",
-      });
-    } catch (err) {
-      if (err instanceof AuthError) {
-        throw new Error("Invalid email or password.");
-      }
-      throw err;
-    }
+		  await signIn("credentials", {
+			email,
+			password,
+			redirect: true,
+			redirectTo: "/dashboard",
+		  });
+		} catch (error: any) {
+		  if (error.message?.includes("NEXT_REDIRECT")) {
+			throw error; // Let Next.js handle success redirections cleanly
+		  }
+		  return { error: "Invalid email or password." };
+		}
   }
 
   return (

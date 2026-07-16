@@ -2,16 +2,19 @@ import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
   secret: process.env.AUTH_SECRET,
-  providers: [], // Keep this completely empty here so the Edge engine loads quickly
+  session: { strategy: "jwt" },
+  pages: {
+    signIn: "/login",
+  },
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user) {
         token.role = (user as any).role;
         token.department = (user as any).department;
       }
       return token;
     },
-    session({ session, token }) {
+    async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.sub;
         (session.user as any).role = token.role;
@@ -19,8 +22,5 @@ export const authConfig = {
       }
       return session;
     },
-  },
-  pages: {
-    signIn: "/login",
   },
 } satisfies NextAuthConfig;
