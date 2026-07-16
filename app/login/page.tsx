@@ -1,48 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "@/lib/auth"; // Explicit server function lookup link
-import { useSearchParams } from "next/navigation";
+import { loginAction } from "./actions"; // Import our new server handler cleanly
 
 export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
-  async function handleLoginSubmission(formData: FormData) {
+  async function handleFormSubmit(formData: FormData) {
     setErrorMessage(null);
     setIsLoading(true);
 
-    const emailInput = String(formData.get("email") || "").trim();
-    const passwordInput = String(formData.get("password") || "");
+    // Call the server action safely without client interception loops
+    const result = await loginAction(formData);
 
-    if (!emailInput || !passwordInput) {
-      setErrorMessage("Please complete all required login parameters.");
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      // Execute standard credential authorization lifecycle
-      await signIn("credentials", {
-        email: emailInput,
-        password: passwordInput,
-        redirect: true,
-        redirectTo: callbackUrl,
-      });
-    } catch (error: any) {
-      // Catch standard internal server redirects and let the native loader pass through
-      if (
-        error.message?.includes("NEXT_REDIRECT") || 
-        error.digest?.includes("NEXT_REDIRECT")
-      ) {
-        throw error;
-      }
-      
-      // Map safe string text output to local state array indicators
-      setErrorMessage("Invalid email or password structure configured.");
-    } finally {
+    if (result?.error) {
+      setErrorMessage(result.error);
       setIsLoading(false);
     }
   }
@@ -56,14 +29,13 @@ export default function LoginPage() {
           <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>Sign in to manage office ledger workflows</p>
         </div>
 
-        {/* Friendly Error Banner Panel */}
         {errorMessage && (
           <div style={{ backgroundColor: "#fee2e2", border: "1px solid #fca5a5", color: "#b91c1c", padding: "0.75rem 1rem", borderRadius: "6px", fontSize: "0.875rem", marginBottom: "1.5rem" }}>
             {errorMessage}
           </div>
         )}
 
-        <form action={handleLoginSubmission} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        <form action={handleFormSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.375rem" }}>
             <label htmlFor="email" style={{ fontSize: "0.875rem", fontWeight: 500, color: "#374151" }}>Email Address</label>
             <input
@@ -91,7 +63,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            style={{ width: "100%", padding: "0.75rem", backgroundColor: isLoading ? "#9ca3af" : "#2563eb", color: "#ffffff", fontWeight: 600, border: "none", borderRadius: "6px", cursor: isLoading ? "not-allowed" : "pointer", fontSize: "1rem", marginTop: "0.5rem", transition: "background-color 0.2s" }}
+            style={{ width: "100%", padding: "0.75rem", backgroundColor: isLoading ? "#9ca3af" : "#2563eb", color: "#ffffff", fontWeight: 600, border: "none", borderRadius: "6px", cursor: isLoading ? "not-allowed" : "pointer", fontSize: "1rem", marginTop: "0.5rem" }}
           >
             {isLoading ? "Verifying Credentials..." : "Sign In"}
           </button>
