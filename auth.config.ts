@@ -3,6 +3,7 @@ import type { NextAuthConfig } from "next-auth";
 export const authConfig = {
   secret: process.env.AUTH_SECRET,
   session: { strategy: "jwt" },
+  providers: [], // This empty array is required to satisfy the NextAuthConfig type check!
   pages: {
     signIn: "/login",
   },
