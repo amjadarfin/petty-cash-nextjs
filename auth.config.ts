@@ -32,12 +32,12 @@ export const authConfig = {
 
         // 4. Return valid parameters to construct the Edge session tokens securely
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          department: user.department
-        };
+			  id: user.id,
+			  name: user.name,
+			  email: user.email,
+			  role: user.role,
+			  department: user.department ?? undefined // This safely converts null to undefined for NextAuth
+			};
       }
     })
   ],
